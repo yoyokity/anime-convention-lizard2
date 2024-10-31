@@ -19,10 +19,6 @@ export const usage = `
   - 示例指令：漫展 订阅列表
     - 返回结果：查看订阅列表
   
-## todo：
-- 小编也不知道呢
-
-- ……  
 `
 
 declare module 'koishi' {
@@ -68,7 +64,8 @@ export function apply(ctx: Context, config: Config) {
     .subcommand('.查询 <keyword>', '查询指定城市或主题的漫展信息')
     .action(async ({ session }, keyword) => {
       if (isSearching) {
-        return session.send('当前已有查询进行中，请先完成或停止当前查询。');
+        await session.send('当前已有查询进行中，请先完成或停止当前查询。');
+        return;
       }
 
       if (!keyword) return session.send('请提供查询关键词，例如：漫展 查询 南京');
@@ -94,7 +91,7 @@ export function apply(ctx: Context, config: Config) {
           selectionMessage += `${index + 1}. ${item.name}\n   - ${item.address}\n`;
         });
 
-        await session.send(selectionMessage + '\n请输入对应的序号,输入0停止查询');
+        await session.send(selectionMessage + '\n请输入对应的序号,输入“0”停止查询');
 
         timeoutId = setTimeout(async () => {
           eventCache = [];
@@ -110,67 +107,67 @@ export function apply(ctx: Context, config: Config) {
       }
     });
 
-    ctx.middleware(async (session, next) => {
-      if (eventCache.length === 0) {
-        return next();
-      }
-  
-      const userResponse = session.content?.trim();
-  
-      if (userResponse === '0') {
-        clearTimeout(timeoutId);
-        eventCache = [];
-        retryCount = 0;
-        isSearching = false;
-  
-        await session.send('已停止当前查询');
-        return;
-      }
-  
-      const choice = parseInt(userResponse || '');
-      if (isNaN(choice) || choice < 1 || choice > eventCache.length) {
-        retryCount += 1;
-  
-        if (retryCount >= 3) {
-          eventCache = [];
-          retryCount = 0;
-          isSearching = false;
-          clearTimeout(timeoutId);
-          await session.send('无效的选择次数过多，请稍后重新查询。');
-          return;
-        }
-  
-        await session.send(`无效的选择，请输入正确的序号。(还有${3 - retryCount}次机会)`);
-        return;
-      }
-  
+  ctx.middleware(async (session, next) => {
+    if (eventCache.length === 0) {
+      return next();
+    }
+
+    const userResponse = session.content?.trim();
+
+    if (userResponse === '0') {
       clearTimeout(timeoutId);
-  
-      const selectedItem = eventCache[choice - 1];
-      const result =
-        `漫展名称: ${selectedItem.name}\n` +
-        `地点: ${selectedItem.location}\n` +
-        `地址: ${selectedItem.address}\n` +
-        `时间: ${selectedItem.time}\n` +
-        `标签: ${selectedItem.tag}\n` +
-        `想去的人数: ${selectedItem.wannaGoCount}\n` +
-        `社团数: ${selectedItem.circleCount}\n` +
-        `同人作品数: ${selectedItem.doujinshiCount}\n` +
-        `链接: ${selectedItem.url}\n` +
-        `参与方式: ${selectedItem.isOnline}`;
-  
-      await session.send(h('image', { src: selectedItem.appLogoPicUrl, refer: 'https://cp.allcpp.cn/' }) + '\n' + result);
-  
       eventCache = [];
       retryCount = 0;
       isSearching = false;
-    });
+
+      await session.send('已停止当前查询');
+      return;
+    }
+
+    const choice = parseInt(userResponse || '');
+    if (isNaN(choice) || choice < 1 || choice > eventCache.length) {
+      retryCount += 1;
+
+      if (retryCount >= 3) {
+        eventCache = [];
+        retryCount = 0;
+        isSearching = false;
+        clearTimeout(timeoutId);
+        await session.send('无效的选择次数过多，请稍后重新查询。');
+        return;
+      }
+
+      await session.send(`无效的选择，请输入正确的序号。(还有${3 - retryCount}次机会)`);
+      return;
+    }
+
+    clearTimeout(timeoutId);
+
+    const selectedItem = eventCache[choice - 1];
+    const result =
+      `漫展名称: ${selectedItem.name}\n` +
+      `地点: ${selectedItem.location}\n` +
+      `地址: ${selectedItem.address}\n` +
+      `时间: ${selectedItem.time}\n` +
+      `标签: ${selectedItem.tag}\n` +
+      `想去的人数: ${selectedItem.wannaGoCount}\n` +
+      `社团数: ${selectedItem.circleCount}\n` +
+      `同人作品数: ${selectedItem.doujinshiCount}\n` +
+      `链接: ${selectedItem.url}\n` +
+      `参与方式: ${selectedItem.isOnline}`;
+
+    await session.send(h('image', { src: selectedItem.appLogoPicUrl, refer: 'https://cp.allcpp.cn/' }) + '\n' + result);
+
+    eventCache = [];
+    retryCount = 0;
+    isSearching = false;
+  });
 
   conventionCmd
     .subcommand('.订阅 <keyword>', '订阅指定城市或主题的漫展信息')
     .action(async ({ session }, keyword) => {
       if (!keyword) return session.send('请提供订阅关键词，例如：漫展 订阅 南京');
-      
+
       const subscriptionExists = await ctx.database.get('user_subscription', {
         userId: session.userId,
         keyword,
@@ -191,18 +188,18 @@ export function apply(ctx: Context, config: Config) {
       await session.send(message);
     });
 
-    conventionCmd
+  conventionCmd
     .subcommand('.取消订阅 [keyword]', '取消订阅指定城市或主题的漫展信息，若无关键词则取消所有订阅')
     .action(async ({ session }, keyword) => {
       const subscriptions = await ctx.database.get('user_subscription', {
         userId: session.userId,
       });
-  
+
       if (subscriptions.length === 0) {
         await session.send('你当前没有任何订阅，无法取消。');
         return;
       }
-  
+
       if (!keyword) {
         await ctx.database.remove('user_subscription', {
           userId: session.userId,
@@ -210,19 +207,19 @@ export function apply(ctx: Context, config: Config) {
         await session.send('已取消所有的漫展订阅信息。');
         return;
       }
-  
+
       const subscriptionExists = subscriptions.some(sub => sub.keyword === keyword);
-  
+
       if (!subscriptionExists) {
         await session.send(`你没有订阅「${keyword}」相关的漫展信息。`);
         return;
       }
-  
+
       await ctx.database.remove('user_subscription', {
         userId: session.userId,
         keyword,
       });
-  
+
       await session.send(`已取消订阅「${keyword}」相关的漫展信息。`);
     });
 
