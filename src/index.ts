@@ -19,6 +19,8 @@ export const usage = `
   - 示例指令：漫展 订阅列表
     - 返回结果：查看订阅列表
   
+---
+#### 喜欢我的插件可以[请我喝可乐](https://ifdian.net/a/lizard0126)，没准就有动力更新新功能了
 `
 
 declare module 'koishi' {
@@ -68,7 +70,10 @@ export function apply(ctx: Context, config: Config) {
         return;
       }
 
-      if (!keyword) return session.send('请提供查询关键词，例如：漫展 查询 南京');
+      if (!keyword) {
+        await session.send('请提供查询关键词，例如：漫展 查询 南京');
+        return;
+      }
 
       isSearching = true;
 
@@ -91,7 +96,7 @@ export function apply(ctx: Context, config: Config) {
           selectionMessage += `${index + 1}. ${item.name}\n   - ${item.address}\n`;
         });
 
-        await session.send(selectionMessage + '\n请输入对应的序号,输入“0”停止查询');
+        await session.send(selectionMessage + '\n请输入对应的序号，输入“0”停止查询');
 
         timeoutId = setTimeout(async () => {
           eventCache = [];
@@ -156,7 +161,13 @@ export function apply(ctx: Context, config: Config) {
       `链接: ${selectedItem.url}\n` +
       `参与方式: ${selectedItem.isOnline}`;
 
-    await session.send(h('image', { src: selectedItem.appLogoPicUrl, refer: 'https://cp.allcpp.cn/' }) + '\n' + result);
+    const img = await ctx.http.get(selectedItem.appLogoPicUrl, {
+      headers: {
+        refer: 'https://cp.allcpp.cn/',
+      },
+    });
+
+    await session.send(`${h.image(img)}\n${result}`);
 
     eventCache = [];
     retryCount = 0;
