@@ -74,17 +74,22 @@ export function apply(ctx: Context, config: Config) {
   conventionCmd
     .subcommand('.查询 <keyword>', '查询指定城市或主题的漫展信息')
     .action(async ({ session }, keyword) => {
-      if (!keyword) return session.send('请提供查询关键词，例如：漫展 查询 南京');
+      if (!keyword) {
+        await session.send('请提供查询关键词，例如：漫展 查询 南京');
+        return;
+      }
 
       if (userSearchCache[session.userId]?.cache?.length) {
-        return session.send('你已有未完成的查询，请完成后再发起新查询。');
+        await session.send('你已有未完成的查询，请完成后再发起新查询。');
+        return;
       }
 
       const searchUrl = config.apiUrl + searchApi + encodeURIComponent(keyword);
       try {
         const response = await ctx.http.get(searchUrl);
         if (response.code !== 200 || !response.data?.length) {
-          return session.send('未找到相关漫展信息，请尝试其他关键词。');
+          await session.send('未找到相关漫展信息，请尝试其他关键词。');
+          return;
         }
 
         userSearchCache[session.userId] = {
@@ -103,7 +108,8 @@ export function apply(ctx: Context, config: Config) {
         }, 15000);
       } catch (error) {
         ctx.logger.error(`Anime convention search error: ${error}`);
-        return session.send('查询漫展信息时出现问题，请稍后重试。');
+        await session.send('查询漫展信息时出现问题，请稍后重试。');
+        return;
       }
     });
 
@@ -118,7 +124,8 @@ export function apply(ctx: Context, config: Config) {
       });
 
       if (subscriptions.length === 0) {
-        return session.send('你当前没有订阅任何关键词，请先订阅后再使用此功能。');
+        await session.send('你当前没有订阅任何关键词，请先订阅后再使用此功能。');
+        return;
       }
 
       const results: any[] = [];
@@ -140,11 +147,12 @@ export function apply(ctx: Context, config: Config) {
       }
 
       if (results.length === 0) {
-        return session.send(
+        await session.send(
           failedKeywords.length > 0
             ? `未找到任何订阅关键词的相关漫展信息（失败关键词：${failedKeywords.join('，')}）。`
             : '未找到任何订阅的漫展信息。'
         );
+        return;
       }
 
       let selectionMessage = '以下是所有订阅关键词的漫展信息：\n';
@@ -169,7 +177,10 @@ export function apply(ctx: Context, config: Config) {
   conventionCmd
     .subcommand('.订阅 <keyword>', '订阅指定城市或主题的漫展信息')
     .action(async ({ session }, keyword) => {
-      if (!keyword) return session.send('请提供订阅关键词，例如：漫展 订阅 南京');
+      if (!keyword) {
+        await session.send('请提供订阅关键词，例如：漫展 订阅 南京');
+        return;
+      }
 
       const channelId = getChannelId(session);
 
@@ -211,11 +222,19 @@ export function apply(ctx: Context, config: Config) {
       }
 
       if (!keyword) {
-        await ctx.database.remove('anime_convention', {
-          userId: session.userId,
-          channelId,
-        });
-        await session.send('已取消所有的漫展订阅信息。');
+        await session.send('你确定要取消所有的漫展订阅信息吗？（是/否）');
+
+        const confirmation = await session.prompt(10000);
+
+        if (confirmation?.toLowerCase() === '是') {
+          await ctx.database.remove('anime_convention', {
+            userId: session.userId,
+            channelId,
+          });
+          await session.send('已取消所有的漫展订阅信息。');
+        } else {
+          await session.send('操作已取消。');
+        }
         return;
       }
 
