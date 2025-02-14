@@ -69,9 +69,7 @@ export function apply(ctx: Context, config: Config) {
     return session.guildId ? session.channelId : `private:${session.userId}`;
   };
 
-  const conventionCmd = ctx.command('漫展', '漫展查询和订阅管理');
-
-  conventionCmd
+  ctx.command('漫展', '漫展查询和订阅管理')
     .subcommand('.查询 <keyword>', '查询指定城市或主题的漫展信息')
     .action(async ({ session }, keyword) => {
       if (!keyword) {
@@ -113,7 +111,7 @@ export function apply(ctx: Context, config: Config) {
       }
     });
 
-  conventionCmd
+  ctx.command('漫展', '漫展查询和订阅管理')
     .subcommand('.一键查询', '查询所有订阅关键词的漫展信息')
     .action(async ({ session }) => {
       const channelId = getChannelId(session);
@@ -174,7 +172,7 @@ export function apply(ctx: Context, config: Config) {
       }, 15000);
     });
 
-  conventionCmd
+  ctx.command('漫展', '漫展查询和订阅管理')
     .subcommand('.订阅 <keyword>', '订阅指定城市或主题的漫展信息')
     .action(async ({ session }, keyword) => {
       if (!keyword) {
@@ -206,7 +204,7 @@ export function apply(ctx: Context, config: Config) {
       return;
     });
 
-  conventionCmd
+  ctx.command('漫展', '漫展查询和订阅管理')
     .subcommand('.取消订阅 [keyword]', '取消订阅指定城市或主题的漫展信息，若无关键词则取消所有订阅')
     .action(async ({ session }, keyword) => {
       const channelId = getChannelId(session);
@@ -254,7 +252,7 @@ export function apply(ctx: Context, config: Config) {
       return;
     });
 
-  conventionCmd
+  ctx.command('漫展', '漫展查询和订阅管理')
     .subcommand('.订阅列表', '查看已经订阅的漫展关键词')
     .action(async ({ session }) => {
       const channelId = getChannelId(session);
