@@ -1,5 +1,5 @@
 import { Context, Schema, Session, h } from 'koishi';
-// npm publish --workspace koishi-plugin-anime-convention-lizard --access public --registry https://registry.npmjs.org
+
 export const inject = ['database'];
 export const name = 'anime-convention-lizard';
 export const usage = `
