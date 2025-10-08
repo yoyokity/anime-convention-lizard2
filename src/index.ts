@@ -105,15 +105,16 @@ function createMessage(data: ConventionEvent[]) {
   for (const e of data) {
     child.push(h('message',
       h.image(e.appLogoPicUrl),
-      `【${e.name.trim()}】\n`,
-      `时间：${formatTime(e.time)}\n`,
-      `地点：${e.address.trim()} （${e.location.trim()}）\n\n`,
+      ' \n',
+      `【名称】 ${e.name.trim()}\n`,
+      `【时间】 ${formatTime(e.time)}\n`,
+      `【地点】 ${e.address.trim()} （${e.location.trim()}）\n\n`,
 
-      `标签：${e.tag.trim().split('|').join(' ')}\n`,
-      `想去的人数：${e.wannaGoCount}\n`,
-      `社团数：${e.circleCount}\n`,
-      `同人作品数：${e.doujinshiCount}\n`,
-      `链接：${e.url}\n`,
+      `【标签】 ${e.tag.trim().split('|').join(' ')}\n`,
+      `【想去的人数】 ${e.wannaGoCount}\n`,
+      `【社团数】 ${e.circleCount}\n`,
+      `【同人作品数】 ${e.doujinshiCount}\n`,
+      `【链接】 ${e.url}\n`,
     ))
   }
   const message = h('message', { forward: true }, child)

@@ -1,7 +1,7 @@
 {
   "name": "koishi-plugin-anime-convention-lizard2",
   "description": "查询某个城市即将开始的漫展或查询相关动漫的漫展，提供订阅服务（在原版基础上做了一些优化）",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
   "author": "yoyokity",
