@@ -31,7 +31,7 @@ export function apply(ctx: Context, config: { apiUrl: string }) {
   }, { primary: ['channelId', 'keyword'] });
   const getChannelId = (session: Session) => session.guildId ? session.channelId : `private:${session.userId}`;
 
-  ctx.command('漫展', '漫展查询和订阅管理')
+  ctx.command('漫展', '漫展查询')
     .subcommand('.缺省值 <keyword>', '设置查询的缺省值（取消则后面不要输入关键词）')
     .action(async ({ session }, keyword) => {
       if (!keyword) {
