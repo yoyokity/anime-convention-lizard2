@@ -60,7 +60,7 @@ export function apply(ctx: Context, config: { apiUrl: string }) {
         return search(ctx, config, defaultKeyword, year, month)
       }
 
-      return '请提供查询关键词，例如：漫展 查询 南京';
+      return '请提供查询关键词，例如：漫展 南京';
     });
 }
 
